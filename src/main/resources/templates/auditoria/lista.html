@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Auditoria</title>
+</head>
+<body>
+
+<div th:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-clipboard-data me-2 text-primary"></i>Auditoria
+        </h2>
+        <span class="text-muted small">Somente leitura • dados pessoais mascarados</span>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-3">Data e hora</th>
+                        <th>Usuário</th>
+                        <th>Operação</th>
+                        <th>Entidade</th>
+                        <th>Alterações (campo: anterior → novo)</th>
+                        <th>Justificativa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(eventos)}">
+                        <td colspan="6" class="text-center text-muted py-5">Nenhum registro encontrado.</td>
+                    </tr>
+                    <tr th:each="ev : ${eventos}">
+                        <td class="ps-3 text-nowrap" th:text="${@formatadorData.formatar(ev.dataHora())}"></td>
+                        <td>
+                            <span class="fw-medium" th:text="${ev.usuario()}"></span><br>
+                            <span class="badge bg-secondary" th:text="${ev.perfil()}"></span>
+                        </td>
+                        <td th:text="${ev.operacaoDescricao()}"></td>
+                        <td>
+                            <span th:text="${ev.entidade()}"></span><br>
+                            <span class="text-muted" th:text="${ev.entidadeId()}"></span>
+                        </td>
+                        <td>
+                            <div th:each="a : ${ev.alteracoes()}">
+                                <strong th:text="${a.campo()}"></strong>:
+                                <span class="text-danger" th:text="${a.valorAnterior() ?: '—'}"></span>
+                                →
+                                <span class="text-success" th:text="${a.valorNovo() ?: '—'}"></span>
+                            </div>
+                        </td>
+                        <td th:text="${ev.justificativa() ?: ''}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer small text-muted">
+            Total: <strong th:text="${#lists.size(eventos)}"></strong> registro(s)
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
