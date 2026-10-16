@@ -8,10 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-/**
- * Disponibiliza o perfil do usuário logado para as telas (apenas para exibir/ocultar
- * itens). Isto é conveniência visual: a autorização real está no backend.
- */
 @ControllerAdvice(annotations = Controller.class)
 public class PerfilModelAdvice {
 

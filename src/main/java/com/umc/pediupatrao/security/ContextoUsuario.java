@@ -5,7 +5,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-/** Acesso ao usuário autenticado da requisição atual (nome e perfil). */
 public final class ContextoUsuario {
 
     public static final String SISTEMA = "sistema";

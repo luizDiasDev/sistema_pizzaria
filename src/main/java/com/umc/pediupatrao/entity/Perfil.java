@@ -3,7 +3,6 @@ package com.umc.pediupatrao.entity;
 import java.util.Locale;
 import java.util.Optional;
 
-
 public enum Perfil {
     ADMIN,
     GERENTE,

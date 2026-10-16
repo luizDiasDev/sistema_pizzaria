@@ -60,7 +60,6 @@
             <version>3.2.0</version>
             <type>jar</type>
         </dependency>
-        <!-- Testes: JUnit 5, Mockito, AssertJ e MockMvc (versões gerenciadas pelo parent) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

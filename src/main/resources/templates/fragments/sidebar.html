@@ -9,17 +9,12 @@
             <div id="sidebar">
                 <h4 class="text-center py-3">Pediu Patrão</h4>
 
-                <!-- Usuário logado e perfil (apenas informativo) -->
                 <div class="text-center small pb-2" th:if="${usuarioLogado != null}">
                     <i class="bi bi-person-circle"></i>
                     <span th:text="${usuarioLogado}"></span><br>
                     <span class="badge bg-secondary" th:text="${perfilLogado}"></span>
                 </div>
 
-                <!--
-                    A visibilidade dos itens abaixo é só conveniência visual.
-                    A autorização de verdade é feita no backend (SecurityConfig + @PreAuthorize).
-                -->
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/}" aria-current="page">
@@ -75,7 +70,6 @@
                         </ul>
                     </li>
                     <li class="nav-item mt-3">
-                        <!-- Logout é POST e leva o token CSRF automaticamente (th:action) -->
                         <form th:action="@{/logout}" method="post" class="px-3">
                             <button type="submit" class="btn btn-outline-light btn-sm w-100">
                                 <i class="bi bi-box-arrow-right"></i><span class="d-none d-md-inline">&nbsp;Sair</span>
