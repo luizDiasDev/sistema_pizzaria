@@ -55,8 +55,6 @@ Usuários do modelo antigo (sem perfil ou `USER`) são migrados para ATENDENTE, 
 | Excluir clientes (auditado) | ❌ | ✅ | ❌ |
 | Consultar auditoria | ✅ | ✅ | ❌ |
 
-> Decisões onde o enunciado é silencioso: ATENDENTE apenas *acompanha* o andamento (quem avança o status é o GERENTE); a exclusão de cliente ficou com o GERENTE. Para mudar, basta ajustar os `@PreAuthorize`.
-
 ### RF02 - Pedido
 `Pedido` guarda cliente (id + nome), forma de entrega, **itens** (produto, nome, preço unitário, quantidade, subtotal), desconto %, valor do desconto, **total**, responsável (`criadoPor`), **data/hora de entrada**, saída, finalização e cancelamento.
 O cliente envia só `clienteId`, `tipoEntrega` (ENTREGA/RETIRADA) e `{produtoId, quantidade}` (`PedidoRequest`). **Preços e total são calculados no servidor** a partir do cadastro de produtos (`Pedido.recalcularTotais`); campos como `total`/`status` enviados na requisição são ignorados. Validações: itens obrigatórios, quantidade 1–99, produto existente/ativo/com preço, cliente existente.
