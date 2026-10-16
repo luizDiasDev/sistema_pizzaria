@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Novo Pedido</title>
+</head>
+<body>
+
+<div th:fragment="content">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a th:href="@{/pedidos}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <h2 class="fw-bold mb-0">Novo Pedido</h2>
+    </div>
+
+    <div class="alert alert-danger d-none" id="erroPedido" role="alert"></div>
+
+    <div class="card shadow-sm" style="max-width: 720px;">
+        <div class="card-body p-4">
+
+            <div class="mb-3">
+                <label for="cliente" class="form-label fw-medium">Cliente</label>
+                <select id="cliente" class="form-select" required>
+                    <option value="" selected disabled>Selecione o cliente</option>
+                    <option th:each="c : ${clientes}" th:value="${c['id']}" th:text="${c['nome']}"></option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="tipoEntrega" class="form-label fw-medium">Entrega ou retirada</label>
+                <select id="tipoEntrega" class="form-select">
+                    <option value="ENTREGA">Entrega</option>
+                    <option value="RETIRADA">Retirada no balcão</option>
+                </select>
+            </div>
+
+            <p class="fw-medium mb-2">Itens</p>
+            <div id="linhas"></div>
+            <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="adicionarLinha()">
+                <i class="bi bi-plus-lg"></i> Adicionar item
+            </button>
+
+            <p class="text-muted small">
+                O valor total é calculado pelo servidor com base nos preços cadastrados.
+            </p>
+
+            <button type="button" class="btn btn-primary" onclick="enviarPedido()">
+                <i class="bi bi-check-lg me-1"></i>Registrar pedido
+            </button>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const PRODUTOS = /*[[${produtos}]]*/ [];
+
+        function adicionarLinha() {
+            const div = document.createElement('div');
+            div.className = 'row g-2 mb-2 linha-item';
+            let opcoes = '<option value="" disabled selected>Produto</option>';
+            PRODUTOS.forEach(p => {
+                opcoes += '<option value="' + esc(p.id) + '">' + esc(p.nome) + ' — R$ ' + Number(p.preco).toFixed(2) + '</option>';
+            });
+            div.innerHTML =
+                '<div class="col-8"><select class="form-select produto">' + opcoes + '</select></div>' +
+                '<div class="col-3"><input type="number" class="form-control quantidade" min="1" max="99" value="1"></div>' +
+                '<div class="col-1"><button type="button" class="btn btn-outline-danger w-100" onclick="this.closest(\'.linha-item\').remove()">&times;</button></div>';
+            document.getElementById('linhas').appendChild(div);
+        }
+
+        async function enviarPedido() {
+            const erro = document.getElementById('erroPedido');
+            erro.classList.add('d-none');
+            const itens = [];
+            document.querySelectorAll('.linha-item').forEach(l => {
+                const produtoId = l.querySelector('.produto').value;
+                const quantidade = parseInt(l.querySelector('.quantidade').value, 10);
+                if (produtoId) { itens.push({ produtoId: produtoId, quantidade: quantidade }); }
+            });
+            const corpo = {
+                clienteId: document.getElementById('cliente').value,
+                tipoEntrega: document.getElementById('tipoEntrega').value,
+                itens: itens
+            };
+            try {
+                await apiJson('/api/pedidos', 'POST', corpo);
+                window.location.href = '/pedidos';
+            } catch (e) {
+                erro.textContent = e.message;
+                erro.classList.remove('d-none');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', adicionarLinha);
+    </script>
+
+</div>
+
+</body>
+</html>
