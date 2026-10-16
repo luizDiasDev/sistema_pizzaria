@@ -8,23 +8,40 @@
         <div th:fragment="sidebar">
             <div id="sidebar">
                 <h4 class="text-center py-3">Pediu Patrão</h4>
+
+                <!-- Usuário logado e perfil (apenas informativo) -->
+                <div class="text-center small pb-2" th:if="${usuarioLogado != null}">
+                    <i class="bi bi-person-circle"></i>
+                    <span th:text="${usuarioLogado}"></span><br>
+                    <span class="badge bg-secondary" th:text="${perfilLogado}"></span>
+                </div>
+
+                <!--
+                    A visibilidade dos itens abaixo é só conveniência visual.
+                    A autorização de verdade é feita no backend (SecurityConfig + @PreAuthorize).
+                -->
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/}" aria-current="page">
                             <i class="bi bi-house"></i><span class="d-none d-md-inline">&nbsp;Home</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" th:if="${ehGerente or ehAtendente}">
                         <a class="nav-link" th:href="@{/clientes}">
                             <i class="bi bi-person-raised-hand"></i><span class="d-none d-md-inline">&nbsp;Clientes</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" th:if="${ehAdmin or ehGerente or ehAtendente}">
                         <a class="nav-link" th:href="@{/pedidos}">
                             <i class="bi bi-bag"></i><span class="d-none d-md-inline">&nbsp;Pedidos</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" th:if="${ehAdmin or ehGerente}">
+                        <a class="nav-link" th:href="@{/auditoria}">
+                            <i class="bi bi-clipboard-data"></i><span class="d-none d-md-inline">&nbsp;Auditoria</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" th:if="${ehAdmin or ehGerente or ehAtendente}">
                         <a class="nav-link" href="#" onclick="toggleSubmenu(event, this)">
                             <i class="bi bi-gear"></i><span class="d-none d-md-inline">&nbsp;Configurações</span>
                             <span class="float-end">&#9662;</span> <!-- Setinha -->
@@ -50,14 +67,21 @@
                                     <i class="bi bi-boxes"></i><span class="d-none d-md-inline">&nbsp;Produtos</span>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item" th:if="${ehAdmin}">
                                 <a class="nav-link" th:href="@{/usuarios}">
                                     <i class="bi bi-people-fill"></i><span class="d-none d-md-inline">&nbsp;Usuários</span>
                                 </a>
                             </li>
+                        </ul>
                     </li>
-                </ul>
-                </li>
+                    <li class="nav-item mt-3">
+                        <!-- Logout é POST e leva o token CSRF automaticamente (th:action) -->
+                        <form th:action="@{/logout}" method="post" class="px-3">
+                            <button type="submit" class="btn btn-outline-light btn-sm w-100">
+                                <i class="bi bi-box-arrow-right"></i><span class="d-none d-md-inline">&nbsp;Sair</span>
+                            </button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

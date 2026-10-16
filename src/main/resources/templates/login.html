@@ -38,6 +38,8 @@
             <h3 class="mb-4">Bem-vindo</h3>
             
             <!-- Formulário de Login -->
+            <div class="alert alert-danger py-2" th:if="${param.error}">Usuário ou senha inválidos.</div>
+            <div class="alert alert-success py-2" th:if="${param.logout}">Você saiu do sistema.</div>
             <form th:action="@{/login}" method="post">
                 <div class="form-group mb-3">
                     <label for="username" class="form-label">Usuário</label>
