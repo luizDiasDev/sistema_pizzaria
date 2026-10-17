@@ -37,6 +37,24 @@ body {
     padding: 20px;
 }
 
+main {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+@media (min-width: 769px) {
+    aside {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        align-self: flex-start;
+    }
+
+    #sidebar {
+        overflow-y: auto;
+    }
+}
+
 @media (max-width: 768px) {
     #sidebar {
         position: fixed;
