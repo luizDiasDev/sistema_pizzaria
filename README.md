@@ -8,6 +8,8 @@ Inclui perfis de acesso, fluxo controlado de pedidos, desconto e cancelamento ex
 **Aluno:** Luiz Eduardo Dias
 **RGM:** 11231104074
 
+**Vídeo de apresentação:** https://youtu.be/sbYyEoiODXg
+
 ## Como executar
 
 Requisitos: Java 21 e MongoDB rodando em `localhost:27017`.
