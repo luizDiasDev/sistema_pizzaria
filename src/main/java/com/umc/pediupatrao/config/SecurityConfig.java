@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/error", "/css/**", "/dist/**", "/plugins/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/usuarios/**", "/api/usuarios/**", "/admin/**", "/admin").hasRole("ADMIN")
                         .requestMatchers("/auditoria/**", "/api/auditoria/**").hasAnyRole("ADMIN", "GERENTE")
+                        .requestMatchers("/dashboard/**", "/api/dashboard/**").hasAnyRole("ADMIN", "GERENTE")
                         .requestMatchers(HttpMethod.DELETE, "/api/clientes/**").hasRole("GERENTE")
                         .requestMatchers("/clientes/**", "/api/clientes/**").hasAnyRole("GERENTE", "ATENDENTE")
                         .requestMatchers("/pedidos/**", "/api/pedidos/**", "/produtos/**", "/api/produtos/**")

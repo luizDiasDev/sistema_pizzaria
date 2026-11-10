@@ -1,7 +1,9 @@
-# PediuPatrão - Evolução do Sistema de Pedidos (M1 - Parte 2)
+# PediuPatrão - Sistema de Pedidos
 
 Sistema de pedidos de pizzaria em Java 21, Spring Boot 3.4, Spring Security, MongoDB e Thymeleaf.
-Esta versão adiciona perfis de acesso, fluxo controlado de pedidos, desconto e cancelamento exclusivos do gerente e auditoria persistente.
+Inclui perfis de acesso, fluxo controlado de pedidos, desconto e cancelamento exclusivos do gerente, auditoria persistente e um dashboard administrativo.
+
+**Dashboard administrativo:** requisitos, endpoints e evidências de testes em [docs/DOCUMENTACAO.md](docs/DOCUMENTACAO.md).
 
 **Aluno:** Luiz Eduardo Dias
 **RGM:** 11231104074
@@ -19,7 +21,7 @@ Acesse http://localhost:8080. Para outro MongoDB, defina a variável `MONGODB_UR
 
 ### Usuários de demonstração
 
-Criados na primeira execução, junto com alguns produtos de exemplo. Para desligar: `APP_SEED_ENABLED=false`.
+Criados na primeira execução, junto com alguns produtos de exemplo e, se o banco não tiver pedidos, 60 pedidos de demonstração para o dashboard. Para desligar: `APP_SEED_ENABLED=false`.
 
 | Usuário | Senha | Perfil |
 |---|---|---|
