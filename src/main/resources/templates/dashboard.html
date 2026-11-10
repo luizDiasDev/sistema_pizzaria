@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+
+<div th:fragment="content">
+
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-graph-up me-2 text-primary"></i>Dashboard
+        </h2>
+        <span class="text-muted small" id="atualizadoEm">Carregando...</span>
+    </div>
+
+    <form id="filtros" class="card shadow-sm mb-3">
+        <div class="card-body row g-2 align-items-end">
+            <div class="col-6 col-md-3">
+                <label class="form-label small mb-1" for="f-inicio">Data inicial</label>
+                <input type="date" class="form-control form-control-sm" id="f-inicio">
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label small mb-1" for="f-fim">Data final</label>
+                <input type="date" class="form-control form-control-sm" id="f-fim">
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label small mb-1" for="f-tipo">Tipo</label>
+                <select class="form-select form-select-sm" id="f-tipo">
+                    <option value="">Todos</option>
+                    <option value="ENTREGA">Entrega</option>
+                    <option value="RETIRADA">Retirada</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-fill">Filtrar</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnAtualizar" title="Atualizar">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <div class="alert alert-danger d-none" id="erro"></div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100"><div class="card-body">
+                <div class="text-muted small">Faturamento</div>
+                <div class="fs-4 fw-bold" id="k-faturamento">-</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100"><div class="card-body">
+                <div class="text-muted small">Pedidos</div>
+                <div class="fs-4 fw-bold" id="k-pedidos">-</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100"><div class="card-body">
+                <div class="text-muted small">Ticket médio</div>
+                <div class="fs-4 fw-bold" id="k-ticket">-</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card shadow-sm h-100"><div class="card-body">
+                <div class="text-muted small">Cancelados</div>
+                <div class="fs-4 fw-bold" id="k-cancelados">-</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-medium">Faturamento por dia</div>
+                <div class="card-body"><div style="position: relative; height: 280px;"><canvas id="graficoVendas"></canvas></div></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-medium">Pedidos por situação</div>
+                <div class="card-body"><div style="position: relative; height: 280px;"><canvas id="graficoStatus"></canvas></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white fw-medium">Produtos mais vendidos</div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">#</th>
+                        <th>Produto</th>
+                        <th class="text-end">Quantidade</th>
+                        <th class="text-end pe-3">Valor vendido</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaProdutos"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script th:src="@{/plugins/chart.js/Chart.min.js}"></script>
+    <script th:inline="none">
+        (function () {
+            const ATUALIZACAO_AUTOMATICA_MS = 60000;
+            const moeda = v => Number(v || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            const dataBr = iso => iso.split('-').reverse().join('/');
+            const el = id => document.getElementById(id);
+            let graficoVendas = null;
+            let graficoStatus = null;
+
+            function parametros() {
+                const p = new URLSearchParams();
+                if (el('f-inicio').value) p.set('inicio', el('f-inicio').value);
+                if (el('f-fim').value) p.set('fim', el('f-fim').value);
+                if (el('f-tipo').value) p.set('tipoEntrega', el('f-tipo').value);
+                return p.toString();
+            }
+
+            async function buscar(recurso) {
+                const resposta = await fetch('/api/dashboard/' + recurso + '?' + parametros(), {
+                    headers: {'Accept': 'application/json'}
+                });
+                if (resposta.status === 401) {
+                    throw new Error('Sessão expirada. Faça login novamente.');
+                }
+                const corpo = await resposta.json().catch(() => null);
+                if (!resposta.ok) {
+                    throw new Error(corpo && corpo.mensagem ? corpo.mensagem : 'Erro ao carregar dados (' + resposta.status + ').');
+                }
+                return corpo;
+            }
+
+            async function carregar() {
+                el('erro').classList.add('d-none');
+                try {
+                    const dados = await Promise.all([
+                        buscar('resumo'),
+                        buscar('vendas-por-dia'),
+                        buscar('pedidos-por-status'),
+                        buscar('produtos-mais-vendidos')
+                    ]);
+                    mostrarResumo(dados[0]);
+                    mostrarVendas(dados[1]);
+                    mostrarStatus(dados[2]);
+                    mostrarProdutos(dados[3]);
+                    el('atualizadoEm').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR');
+                } catch (e) {
+                    el('erro').textContent = e.message;
+                    el('erro').classList.remove('d-none');
+                }
+            }
+
+            function mostrarResumo(r) {
+                el('f-inicio').value = r.inicio;
+                el('f-fim').value = r.fim;
+                el('k-faturamento').textContent = moeda(r.faturamento);
+                el('k-pedidos').textContent = r.totalPedidos;
+                el('k-ticket').textContent = moeda(r.ticketMedio);
+                el('k-cancelados').textContent = r.pedidosCancelados;
+            }
+
+            function mostrarVendas(lista) {
+                const rotulos = lista.map(v => dataBr(v.data).substring(0, 5));
+                const valores = lista.map(v => v.faturamento);
+                if (graficoVendas) {
+                    graficoVendas.data.labels = rotulos;
+                    graficoVendas.data.datasets[0].data = valores;
+                    graficoVendas.update();
+                    return;
+                }
+                graficoVendas = new Chart(el('graficoVendas'), {
+                    type: 'line',
+                    data: {
+                        labels: rotulos,
+                        datasets: [{
+                            label: 'Faturamento',
+                            data: valores,
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13, 110, 253, 0.08)',
+                            pointRadius: 3,
+                            lineTension: 0
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        legend: {display: false},
+                        scales: {yAxes: [{ticks: {beginAtZero: true, callback: v => moeda(v)}}]},
+                        tooltips: {callbacks: {label: t => moeda(t.yLabel)}}
+                    }
+                });
+            }
+
+            function mostrarStatus(lista) {
+                const cores = {
+                    RECEBIDO: '#6c757d', EM_PREPARACAO: '#ffc107', PRONTO: '#0dcaf0',
+                    SAIU_PARA_ENTREGA: '#0d6efd', RETIRADO: '#6610f2', FINALIZADO: '#198754', CANCELADO: '#dc3545'
+                };
+                const rotulos = lista.map(s => s.rotulo);
+                const valores = lista.map(s => s.quantidade);
+                const fundo = lista.map(s => cores[s.status] || '#adb5bd');
+                if (graficoStatus) {
+                    graficoStatus.data.labels = rotulos;
+                    graficoStatus.data.datasets[0].data = valores;
+                    graficoStatus.update();
+                    return;
+                }
+                graficoStatus = new Chart(el('graficoStatus'), {
+                    type: 'horizontalBar',
+                    data: {labels: rotulos, datasets: [{data: valores, backgroundColor: fundo}]},
+                    options: {
+                        maintainAspectRatio: false,
+                        legend: {display: false},
+                        scales: {xAxes: [{ticks: {beginAtZero: true, precision: 0}}]}
+                    }
+                });
+            }
+
+            function mostrarProdutos(lista) {
+                const corpo = el('tabelaProdutos');
+                corpo.innerHTML = '';
+                if (lista.length === 0) {
+                    corpo.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum produto vendido no período.</td></tr>';
+                    return;
+                }
+                lista.forEach((p, i) => {
+                    const linha = document.createElement('tr');
+                    linha.innerHTML = '<td class="ps-3">' + (i + 1) + '</td><td></td>'
+                            + '<td class="text-end">' + p.quantidade + '</td>'
+                            + '<td class="text-end pe-3">' + moeda(p.faturamento) + '</td>';
+                    linha.children[1].textContent = p.produto;
+                    corpo.appendChild(linha);
+                });
+            }
+
+            el('filtros').addEventListener('submit', e => { e.preventDefault(); carregar(); });
+            el('btnAtualizar').addEventListener('click', carregar);
+            setInterval(carregar, ATUALIZACAO_AUTOMATICA_MS);
+            carregar();
+        })();
+    </script>
+
+</div>
+
+</body>
+</html>
