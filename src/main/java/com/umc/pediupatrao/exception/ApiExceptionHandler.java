@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice(annotations = org.springframework.web.bind.annotation.RestController.class)
 public class ApiExceptionHandler {
@@ -22,6 +23,11 @@ public class ApiExceptionHandler {
     @ExceptionHandler(RecursoNaoEncontradoException.class)
     public ResponseEntity<Map<String, Object>> naoEncontrado(RecursoNaoEncontradoException e) {
         return resposta(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, Object>> parametroInvalido(MethodArgumentTypeMismatchException e) {
+        return resposta(HttpStatus.BAD_REQUEST, "Parâmetro '" + e.getName() + "' inválido: " + e.getValue());
     }
 
     @ExceptionHandler(org.springframework.dao.DataAccessException.class)
